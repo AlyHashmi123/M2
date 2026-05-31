@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Surprise for Manahil</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: pink;
+            overflow: hidden;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .heart {
+            position: absolute;
+            bottom: -10px;
+            width: 20px;
+            height: 20px;
+            background: maroon;
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 50% 82%, 18% 100%, 0% 38%);
+            animation: floatHeart 4s linear infinite;
+        }
+
+        .balloon-heart {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            background: #ff3366;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 50% 82%, 18% 100%, 0% 38%);
+            animation: balloonPop 3s ease-in-out infinite;
+        }
+
+        @keyframes floatHeart {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+        }
+
+        @keyframes balloonPop {
+            0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateX(-50%) translateY(-10px) scale(1.1); opacity: 0.7; }
+            100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+        }
+
+        /* ── Base card ── */
+        .card {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(128,0,0,0.6);
+            padding: 25px;
+            text-align: center;
+            width: 500px;
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.7s ease-in-out;
+        }
+        .card.show { opacity: 1; transform: translateY(0); }
+        .card.hidden { display: none !important; }
+
+        .btn {
+            background: maroon;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(128,0,0,0.5);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+        .btn:hover { background: darkred; box-shadow: 0 6px 18px rgba(128,0,0,0.7); }
+        .btn:active { transform: scale(0.95); }
+
+        #button-container { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+
+        #no-btn { position: relative; transition: transform 0.3s ease; }
+
+        .visual {
+            width: 50px; height: 50px;
+            background: maroon; border-radius: 50%;
+            margin: 10px auto;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%,100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        /* ══════════════════════════════════════
+           OUR MOMENTS — date selector
+        ══════════════════════════════════════ */
+        #momentsScreen {
+            width: 600px;
+            max-height: 82vh;
+            overflow-y: auto;
+            text-align: left;
+            padding: 28px;
+        }
+        #momentsScreen::-webkit-scrollbar { width: 5px; }
+        #momentsScreen::-webkit-scrollbar-thumb { background: #f0a0b0; border-radius: 10px; }
+
+        .moments-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 600;
+            color: maroon;
+            margin-bottom: 4px;
+        }
+        .moments-sub {
+            text-align: center;
+            font-size: 12px;
+            color: #b06070;
+            margin-bottom: 22px;
+            letter-spacing: 0.3px;
+        }
+
+        .date-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .date-card {
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.22s, box-shadow 0.22s;
+            background: #fff0f3;
+            border: 2px solid #f5c0cc;
+            position: relative;
+        }
+        .date-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 28px rgba(128,0,0,0.22);
+            border-color: maroon;
+        }
+
+        /* cover image */
+        .date-card-thumb {
+            width: 100%; height: 110px;
+            object-fit: cover; display: block;
+        }
+        /* emoji fallback */
+        .date-card-placeholder {
+            width: 100%; height: 110px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px;
+            background: linear-gradient(135deg, #ffccd5 0%, #ffb3c1 100%);
+        }
+
+        /* little heart badge top-right */
+        .date-card-badge {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: maroon;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+
+        .date-card-info {
+            padding: 10px 12px 12px;
+        }
+        .date-card-info .dc-date {
+            font-size: 13px;
+            font-weight: 600;
+            color: maroon;
+            margin: 0 0 2px;
+        }
+        .date-card-info .dc-caption {
+            font-size: 11px;
+            color: #b06070;
+            margin: 0 0 2px;
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .date-card-info .dc-count {
+            font-size: 11px;
+            color: #cca0aa;
+            margin: 0;
+        }
+
+        /* ══════════════════════════════════════
+           GALLERY — single-date photo wall
+        ══════════════════════════════════════ */
+        #galleryScreen {
+            width: 620px;
+            max-height: 82vh;
+            overflow-y: auto;
+            text-align: left;
+            padding: 24px 28px;
+        }
+        #galleryScreen::-webkit-scrollbar { width: 5px; }
+        #galleryScreen::-webkit-scrollbar-thumb { background: #f0a0b0; border-radius: 10px; }
+
+        .gallery-topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .back-btn-small {
+            background: none;
+            border: 1.5px solid maroon;
+            color: maroon;
+            border-radius: 8px;
+            padding: 5px 14px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            transition: background 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+        .back-btn-small:hover { background: maroon; color: white; }
+
+        .gallery-date-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: maroon;
+            margin: 0;
+        }
+        .gallery-caption-sub {
+            font-size: 12px;
+            color: #b06070;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* ── masonry-like photo grid ── */
+        .photo-wall {
+            columns: 3;
+            column-gap: 12px;
+        }
+        .photo-wall-item {
+            break-inside: avoid;
+            margin-bottom: 12px;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid #f5c0cc;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            background: #fff0f3;
+        }
+        .photo-wall-item:hover {
+            transform: scale(1.03);
+            border-color: maroon;
+            box-shadow: 0 8px 22px rgba(128,0,0,0.2);
+        }
+        .photo-wall-item img {
+            width: 100%;
+            display: block;
+            border-radius: 12px;
+        }
+        /* overlay on hover */
+        .photo-wall-item::after {
+            content: '🔍';
+            position: absolute;
+            inset: 0;
+            background: rgba(128,0,0,0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            border-radius: 12px;
+        }
+        .photo-wall-item:hover::after { opacity: 1; }
+
+        /* emoji placeholder for missing photos */
+        .photo-placeholder {
+            width: 100%;
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: linear-gradient(135deg, #ffccd5, #ffb3c1);
+            gap: 6px;
+        }
+        .photo-placeholder span {
+            font-size: 11px;
+            font-weight: 600;
+            color: #993355;
+        }
+
+        .empty-gallery {
+            text-align: center;
+            padding: 40px 20px;
+            color: #cca0b0;
+            font-size: 13px;
+        }
+
+        /* ══════════════════════════════════════
+           LIGHTBOX
+        ══════════════════════════════════════ */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        #lightbox.open { display: flex; }
+
+        #lightbox img {
+            max-width: 88vw;
+            max-height: 74vh;
+            border-radius: 14px;
+            object-fit: contain;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+        }
+
+        #lightbox-close {
+            position: absolute;
+            top: 18px; right: 24px;
+            font-size: 28px;
+            color: white;
+            cursor: pointer;
+            background: none;
+            border: none;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        #lightbox-close:hover { opacity: 1; }
+
+        #lightbox-counter {
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #lightbox-nav { display: flex; gap: 16px; }
+        #lightbox-nav button {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 26px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background 0.2s;
+            font-family: 'Poppins', sans-serif;
+        }
+        #lightbox-nav button:hover { background: rgba(255,255,255,0.28); }
+
+        /* exit screen */
+        #exitScreen {
+            width: 90%;
+            max-width: 800px;
+            height: 70vh;
+            background: url('Us.jpg') center/cover no-repeat;
+            color: white;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+        }
+    </style>
+</head>
+<body>
+
+<div id="heart-container"></div>
+<div class="balloon-heart"></div>
+
+<!-- ── Screen 1 ── -->
+<div class="card show" id="screen1">
+    <h1>Hii Manahilllll 👋</h1>
+    <div class="visual"></div>
+    <button class="btn" onclick="showQuestion()">Click it lovey</button>
+</div>
+
+<!-- ── Screen 2: The question ── -->
+<div class="card hidden" id="screen2">
+    <p>Do you wanna stay wimme and create memories tgt?</p>
+    <div class="visual"></div>
+    <div id="button-container">
+        <button class="btn" onclick="handleYes()">YES</button>
+        <button class="btn" id="no-btn" onclick="moveNoButtonOnce()">NO</button>
+    </div>
+</div>
+
+<!-- ── Sarcastic ── -->
+<div class="card hidden" id="sarcasticScreen">
+    <p><strong>Really?</strong> You want to say NO? 🤔</p>
+    <p>Sorry, but there's no option for NO! You're stuck now 😒</p>
+    <button class="btn" onclick="showMessageScreen()">Okay fine, I'll forgive you</button>
+</div>
+
+<!-- ── Screen 3 ── -->
+<div class="card hidden" id="screen3">
+    <h2>Thank you for saying YES!</h2>
+    <p>So as you know, I am not really a Valentine person, but this is not really about Valentine's Day either.</p>
+    <br>
+    <p>This is just to let you know that I adore you and want you to myself.</p>
+    <br>
+    <p>Thank you for always ignoring my toxic patterns and treating me with LOVE. It means the world to me, and you are my best person ❤️</p>
+    <button class="btn" onclick="showReassuranceScreen()">Continue</button>
+</div>
+
+<!-- ── Reassurance ── -->
+<div class="card hidden" id="reassuranceScreen">
+    <h2>You are safe here 🫂!</h2>
+    <p id="reassurance-text">Go ahead girliepop💅 👇</p>
+    <br>
+    <button class="btn" onclick="generateReassurance()">Click for more love!</button>
+    <button class="btn" onclick="showMomentsScreen()">Our Moments 📸</button>
+    <button class="btn" onclick="showExitScreen()">Wanna head out?</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     OUR MOMENTS — date grid
+══════════════════════════════════════════ -->
+<div class="card hidden" id="momentsScreen">
+    <p class="moments-title">Our Moments 💕</p>
+    <p class="moments-sub">every date is a little chapter of us</p>
+    <div class="date-grid" id="dateGrid"></div>
+    <div style="text-align:center;">
+        <button class="btn" onclick="showReassuranceScreen()">← Back</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GALLERY — single date photo wall
+══════════════════════════════════════════ -->
+<div class="card hidden" id="galleryScreen">
+    <div class="gallery-topbar">
+        <button class="back-btn-small" onclick="showMomentsScreen()">← Back</button>
+        <div>
+            <p class="gallery-date-title" id="galleryDateTitle"></p>
+            <p class="gallery-caption-sub" id="galleryCaptionSub"></p>
+        </div>
+    </div>
+    <div class="photo-wall" id="photoWall"></div>
+</div>
+
+<!-- ── Exit ── -->
+<div class="card hidden" id="exitScreen" style="padding:20px;">
+    <br><br><br>
+    <h2>Thank you for coming by Loveyyy ❤️</h2>
+    <button class="btn" onclick="restart()">Restart</button>
+</div>
+
+<!-- ── Lightbox ── -->
+<div id="lightbox" onclick="handleLBClick(event)">
+    <button id="lightbox-close" onclick="closeLB()">&#10005;</button>
+    <img id="lb-img" src="" alt="moment" />
+    <div id="lightbox-counter" id="lb-counter"></div>
+    <div id="lightbox-nav">
+        <button onclick="lbStep(-1)">&#8592;</button>
+        <button onclick="lbStep(1)">&#8594;</button>
+    </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   MOMENTS DATA
+   ════════════════════════════════════════════════════════════════
+   Add your dates here. Each entry = one album card.
+
+   Fields:
+     date     — label shown on the card & gallery header
+     caption  — short sweet note shown under the date (optional)
+     cover    — path to thumbnail e.g. "photos/feb14/cover.jpg"
+                leave "" to show the emoji placeholder
+     emoji    — fallback icon when no cover image is set
+     photos   — array of image paths inside this album
+                e.g. ["photos/feb14/1.jpg", "photos/feb14/2.jpg"]
+
+   To add a new date: copy one block, change the fields, done.
+   ════════════════════════════════════════════════════════════════ */
+const MOMENTS_DATA = [
+    {
+        date: "Feb 14, 2024",
+        caption: "our first valentine's 🌹",
+        cover: "",
+        emoji: "💕",
+        photos: [
+            // "photos/feb14/1.jpg",
+            // "photos/feb14/2.jpg",
+        ]
+    },
+    {
+        date: "Mar 3, 2024",
+        caption: "that random afternoon 🌸",
+        cover: "",
+        emoji: "🌸",
+        photos: [
+            // "photos/mar3/1.jpg",
+        ]
+    },
+    {
+        date: "Jun 21, 2024",
+        caption: "summer adventures 🌊",
+        cover: "",
+        emoji: "🌊",
+        photos: []
+    },
+    {
+        date: "Dec 25, 2024",
+        caption: "christmas vibes ☃️",
+        cover: "",
+        emoji: "🎄",
+        photos: []
+    },
+    {
+        date: "Jan 12, 2025",
+        caption: "late night drives 🌙",
+        cover: "",
+        emoji: "🌙",
+        photos: []
+    },
+    {
+        date: "Feb 28, 2025",
+        caption: "coffee & chaos ☕",
+        cover: "",
+        emoji: "☕",
+        photos: []
+    },
+    {
+        date: "Apr 6, 2025",
+        caption: "spring walks 🌷",
+        cover: "",
+        emoji: "🌷",
+        photos: []
+    },
+    {
+        date: "Jul 4, 2025",
+        caption: "lazy sundays 🎆",
+        cover: "",
+        emoji: "🎆",
+        photos: []
+    },
+    // ── copy a block above to add more ──
+];
+
+/* ════════════════════════════════════════════════════════════════
+   Build date grid
+════════════════════════════════════════════════════════════════ */
+function buildDateGrid() {
+    const grid = document.getElementById("dateGrid");
+    grid.innerHTML = "";
+    MOMENTS_DATA.forEach((album, idx) => {
+        const card = document.createElement("div");
+        card.className = "date-card";
+        card.onclick = () => openGallery(idx);
+
+        const thumbHTML = album.cover
+            ? `<img class="date-card-thumb" src="${album.cover}" alt="${album.date}" />`
+            : `<div class="date-card-placeholder">${album.emoji}</div>`;
+
+        const countLabel = album.photos.length === 0
+            ? "no photos yet"
+            : `${album.photos.length} photo${album.photos.length !== 1 ? "s" : ""}`;
+
+        card.innerHTML = `
+            ${thumbHTML}
+            <div class="date-card-badge">♥</div>
+            <div class="date-card-info">
+                <p class="dc-date">${album.date}</p>
+                <p class="dc-caption">${album.caption || ""}</p>
+                <p class="dc-count">${countLabel}</p>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Gallery
+════════════════════════════════════════════════════════════════ */
+let lbPhotos = [];
+let lbIndex = 0;
+
+function openGallery(idx) {
+    const album = MOMENTS_DATA[idx];
+    lbPhotos = album.photos;
+
+    document.getElementById("galleryDateTitle").textContent = album.date;
+    document.getElementById("galleryCaptionSub").textContent = album.caption || "";
+
+    const wall = document.getElementById("photoWall");
+    wall.innerHTML = "";
+
+    if (album.photos.length === 0) {
+        wall.innerHTML = `<div class="empty-gallery">
+            No photos added yet 🌸<br>
+            <small>Add image paths in MOMENTS_DATA for this date</small>
+        </div>`;
+    } else {
+        album.photos.forEach((src, i) => {
+            const item = document.createElement("div");
+            item.className = "photo-wall-item";
+            item.onclick = () => openLB(i);
+            item.innerHTML = `<img src="${src}" alt="photo ${i+1}" loading="lazy"
+                onerror="this.parentNode.innerHTML='<div class=\\'photo-placeholder\\'>${album.emoji}<span>tap to enlarge</span></div>'" />`;
+            wall.appendChild(item);
+        });
+    }
+
+    hide("momentsScreen");
+    show("galleryScreen");
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Lightbox
+════════════════════════════════════════════════════════════════ */
+function openLB(i) {
+    lbIndex = i;
+    updateLB();
+    document.getElementById("lightbox").classList.add("open");
+}
+function closeLB() { document.getElementById("lightbox").classList.remove("open"); }
+function lbStep(dir) {
+    lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+    updateLB();
+}
+function updateLB() {
+    document.getElementById("lb-img").src = lbPhotos[lbIndex];
+    document.getElementById("lightbox-counter").textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
+}
+function handleLBClick(e) { if (e.target.id === "lightbox") closeLB(); }
+
+document.addEventListener("keydown", e => {
+    if (!document.getElementById("lightbox").classList.contains("open")) return;
+    if (e.key === "ArrowLeft") lbStep(-1);
+    if (e.key === "ArrowRight") lbStep(1);
+    if (e.key === "Escape") closeLB();
+});
+
+/* ════════════════════════════════════════════════════════════════
+   Screen helpers
+════════════════════════════════════════════════════════════════ */
+function show(id) {
+    const el = document.getElementById(id);
+    el.classList.remove("hidden");
+    requestAnimationFrame(() => el.classList.add("show"));
+}
+function hide(id) {
+    const el = document.getElementById(id);
+    el.classList.remove("show");
+    el.classList.add("hidden");
+}
+
+function showQuestion() { hide("screen1"); show("screen2"); }
+
+function handleYes() {
+    hide("screen2");
+    show(noButtonInteracted ? "sarcasticScreen" : "screen3");
+}
+
+function showMessageScreen() { hide("sarcasticScreen"); show("screen3"); }
+
+function showReassuranceScreen() {
+    ["screen3","momentsScreen","galleryScreen"].forEach(id => {
+        if (!document.getElementById(id).classList.contains("hidden")) hide(id);
+    });
+    show("reassuranceScreen");
+}
+
+function showMomentsScreen() {
+    buildDateGrid();
+    ["reassuranceScreen","galleryScreen"].forEach(id => {
+        if (!document.getElementById(id).classList.contains("hidden")) hide(id);
+    });
+    show("momentsScreen");
+}
+
+function showExitScreen() { hide("reassuranceScreen"); show("exitScreen"); }
+function restart() { window.location.reload(); }
+
+/* ════════════════════════════════════════════════════════════════
+   Reassurances
+════════════════════════════════════════════════════════════════ */
+const reassurances = [
+    "You made me feel the best, i could never imagine being this loved by a person, your touch makes me feel that i am loved and taken good care of. I tend to believe i will not let you down and break your trust on me 🩷🤍",
+    "Honestly, I don't even know where to begin. You've made me feel seen and appreciated in ways I never thought possible. Your kindness and understanding have given me so much peace, and it's something I'll always be grateful for. I never knew someone could make me feel this valued. 💖✨",
+    "I know your mind can be really tough on you sometimes, making you see things that aren't even there. But I need you to know — none of those thoughts change how I see you. To me, you are so incredibly beautiful, inside and out. I wish you could see yourself the way I see you. 💙✨",
+    "I know things feel overwhelming right now. But I need you to take a deep breath and remember — you don't have to have everything figured out. No matter what happens, I believe in you more than you know. You're stronger than you think, and I'm missing you just as much, if not more. 💖✨",
+    "I know sometimes your mind takes you to places where it's hard to feel connected. But I need you to know — I'm always right here. I see you, I hear you, I love you exactly as you are. You don't have to force yourself to be okay for me. Whenever you're ready, I'll be right here. Always. 💖",
+    "When everything feels too heavy, I just want you to know that you don't have to be strong all the time. It's okay to cry, to feel, to let it all out. I'm not going anywhere. No matter what, you're still you — the person I love. We'll get through this together. Dw pyaru lovey 🤍",
+    "I know the future can feel uncertain. But whatever happens, I'm not going anywhere. We will deal w it no matter what the next chapter holds. You don't have to have it all figured out today. One step at a time, and I'll be right beside you for each one. 💖",
+    "I want you to know that you are more than enough for me. It's not about what you do, how you look, or how you feel sometimes. It's just about you. I don't need perfection, I just need you. And you're everything I could ever ask for and more. 🧬❤️",
+    "I know it's tough when it feels like no one gets you. But I want you to know — I get you. I see the depth of who you are. You don't have to explain yourself over and over to me. I'm here to listen, to understand, and to support you through it all. 💙",
+    "Nothing, just that I love you with all my heart ❤️"
+];
+
+function generateReassurance() {
+    const r = reassurances[Math.floor(Math.random() * reassurances.length)];
+    document.getElementById("reassurance-text").textContent = r;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   No button
+════════════════════════════════════════════════════════════════ */
+let noButton = document.getElementById("no-btn");
+let noButtonInteracted = false;
+
+function moveNoButtonOnce() {
+    noButtonInteracted = true;
+    moveNoButton();
+}
+function moveNoButton() {
+    if (!noButtonInteracted) return;
+    let card = document.getElementById("screen2");
+    let cR = card.getBoundingClientRect();
+    let bR = noButton.getBoundingClientRect();
+    let buf = 20;
+    let rx = Math.random() * (cR.right + buf - bR.width - (cR.left - buf)) + (cR.left - buf);
+    let ry = Math.random() * (cR.bottom + buf - bR.height - (cR.top - buf)) + (cR.top - buf);
+    noButton.style.position = "absolute";
+    noButton.style.left = rx + "px";
+    noButton.style.top = ry + "px";
+}
+document.addEventListener("mousemove", e => {
+    if (!noButtonInteracted) return;
+    let bR = noButton.getBoundingClientRect();
+    if (Math.abs(e.clientX-(bR.left+bR.width/2)) < 100 && Math.abs(e.clientY-(bR.top+bR.height/2)) < 100)
+        moveNoButton();
+});
+
+/* ════════════════════════════════════════════════════════════════
+   Floating hearts
+════════════════════════════════════════════════════════════════ */
+function createHearts() {
+    const c = document.getElementById("heart-container");
+    setInterval(() => {
+        let h = document.createElement("div");
+        h.classList.add("heart");
+        h.style.left = Math.random() * 100 + "vw";
+        h.style.animationDuration = Math.random() * 3 + 2 + "s";
+        c.appendChild(h);
+        setTimeout(() => h.remove(), 4000);
+    }, 300);
+}
+createHearts();
+</script>
+</body>
+</html>
