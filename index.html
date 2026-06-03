@@ -202,12 +202,17 @@
         }
         #lightbox-nav button:hover { background:rgba(255,255,255,0.28); }
 
-        /* ══ ANNIVERSARY SCREEN ══ */
+        /* ══ ANNIVERSARY SCREEN — wider, dynamic height ══ */
         #anniversaryScreen {
-            width:560px;
+            width: min(780px, 90vw);
+            max-height: 88vh;
+            overflow-y: auto;
             background:#fff;
             z-index:20;
         }
+        #anniversaryScreen::-webkit-scrollbar { width:5px; }
+        #anniversaryScreen::-webkit-scrollbar-thumb { background:#f0a0b0; border-radius:10px; }
+
         #fireworks-canvas {
             position:fixed; inset:0;
             pointer-events:none;
@@ -236,7 +241,6 @@
         }
         .anniv-text {
             font-size:14px; color:#555; line-height:1.8;
-            min-height:120px;
             border:1.5px dashed #f5b8c4;
             border-radius:12px; padding:16px 18px;
             margin-bottom:8px;
@@ -657,6 +661,37 @@ function createHeart() {
 }
 
 setInterval(createHeart, 320);
+
+/* ════════════════════════════════════════════════════════
+   BACKGROUND PLAYLIST — add your song file paths below
+════════════════════════════════════════════════════════ */
+const PLAYLIST = [
+    "songs/song1.mp3",   // ← replace with your actual file names
+    "songs/song2.mp3",
+    "songs/song3.mp3",
+];
+
+const bgAudio = new Audio();
+bgAudio.volume = 0.5;   // 0.0 (silent) → 1.0 (full volume)
+let trackIndex = 0;
+let musicStarted = false;
+
+function playNextTrack() {
+    bgAudio.src = PLAYLIST[trackIndex];
+    bgAudio.play().catch(() => {});
+    trackIndex = (trackIndex + 1) % PLAYLIST.length;
+}
+
+bgAudio.addEventListener("ended", playNextTrack);
+
+// Starts on very first user interaction (browser requirement)
+function startMusicOnce() {
+    if (musicStarted) return;
+    musicStarted = true;
+    playNextTrack();
+    document.removeEventListener("click", startMusicOnce);
+}
+document.addEventListener("click", startMusicOnce);
 </script>
 </body>
 </html>
